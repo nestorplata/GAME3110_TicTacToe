@@ -3,6 +3,9 @@ using UnityEngine.Assertions;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using System.Text;
+using System.IO;
+using System;
+
 
 public class NetworkServer : MonoBehaviour
 {
@@ -139,6 +142,64 @@ public class NetworkServer : MonoBehaviour
     private void ProcessReceivedMsg(string msg)
     {
         Debug.Log("Msg received = " + msg);
+        String[] Information = msg.Split(',');
+        string Name = Information[1];
+        string Password = Information[2];
+        int ConnectionID;
+        int.TryParse(Information[3], out ConnectionID);
+
+        string pathfile = "Accounts\\" + Name + ".txt";
+
+        string result;
+        if (Information[0] == "login")
+        {
+            if (File.Exists(pathfile))
+            {
+                using (StreamReader sr = new StreamReader("Accounts\\" + Name + ".txt"))
+                {
+                    if (Password == sr.ReadLine())
+                    {
+                        result="Login Succeded";
+                    }
+                    else
+                    {
+                        result = ("Wrong Password");
+                    }
+                }
+            }
+            else
+            {
+                result = ("Wrong Username");
+
+            }
+        }
+        else
+        {
+            if (!File.Exists(pathfile))
+            {
+                using (StreamWriter sw = new StreamWriter(pathfile))
+                {
+                    sw.WriteLine(Password);
+                }
+                result = ("Account Created");
+
+            }
+            else
+            {
+                result = ("Account Already Exists");
+            }
+        }
+        //for (int i = 0; i < networkConnections.Length; i++)
+        //{
+        //}
+        foreach (NetworkConnection connection in networkConnections)
+        {
+            if (ConnectionID == connection.InternalId)
+            {
+                SendMessageToClient(result, connection);
+                break;
+            }
+        }
     }
 
     public void SendMessageToClient(string msg, NetworkConnection networkConnection)
