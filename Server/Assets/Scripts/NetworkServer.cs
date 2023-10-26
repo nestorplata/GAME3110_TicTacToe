@@ -163,13 +163,13 @@ public class NetworkServer : MonoBehaviour
                     }
                     else
                     {
-                        result = ("Wrong Password");
+                        result = "Wrong Password";
                     }
                 }
             }
             else
             {
-                result = ("Wrong Username");
+                result = "Wrong Username";
 
             }
         }
@@ -181,12 +181,12 @@ public class NetworkServer : MonoBehaviour
                 {
                     sw.WriteLine(Password);
                 }
-                result = ("Account Created");
+                result = "Account Created";
 
             }
             else
             {
-                result = ("Account Already Exists");
+                result = "Account Already Exists";
             }
         }
         //for (int i = 0; i < networkConnections.Length; i++)
