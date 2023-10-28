@@ -88,6 +88,9 @@ public class StateManager : MonoBehaviour
         return message;
 
     }
+    public void Update()
+    {
+    }
     // Start is called before the first frame update
 
 

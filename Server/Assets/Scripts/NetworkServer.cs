@@ -7,8 +7,7 @@ using System.IO;
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
-
-
+using UnityEngine.Networking.PlayerConnection;
 
 public class NetworkServer : MonoBehaviour
 {
@@ -152,11 +151,31 @@ public class NetworkServer : MonoBehaviour
  
         foreach (NetworkConnection connection in networkConnections)
         {
-            if (connection.InternalId == ConnectionID)
-            {
-                SendMessageToClient(msgToSend, connection);
-                break;
-            }
+
+
+            //if (connection.InternalId == ConnectionID) //send message to just one player
+            //{
+                    SendMessageToClient(msgToSend, connection);
+            //}
+            //else //if player is in 
+            //{
+            //foreach (Gameroom room in stateManager.gameRoomList)
+            //{
+            //    if (room.GameroomID == Information[2])
+            //    {
+            //        foreach (Player player in room.PlayersList)
+            //        {
+            //            if (player.ConnectionID == connection.InternalId)
+            //            {
+            //                SendMessageToClient(msgToSend, connection);
+            //            }
+
+            //        }
+            //    }
+
+            //}
+            //}
+
         }
     }
 

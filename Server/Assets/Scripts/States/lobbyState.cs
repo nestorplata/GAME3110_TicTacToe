@@ -22,7 +22,6 @@ public class lobbyState : BaseState
                 room.PlayersList.Add(manager.PlayersList[0]);
                 IsRoomJoined = true;
                 message = "GameRoom Joined";
-
                 break;
             }
         }
