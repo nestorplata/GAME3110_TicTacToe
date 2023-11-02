@@ -10,10 +10,10 @@ public class createState : BaseState
         EnumState = UIStates.create;
     }
 
-    public override void OnContinueMessage(StateManager manager, string Input1,
-        string Input2, int ConnectionID)
+    public override void OnContinueMessage(StateManager manager,
+        Player player, string Input2)
     {
-        string pathfile = "Accounts\\" + Input1 + ".txt";
+        string pathfile = "Accounts\\" + player.Username + ".txt";
 
         if (!File.Exists(pathfile))
         {
@@ -22,7 +22,8 @@ public class createState : BaseState
                 sw.WriteLine(Input2);
             }
             message = "Account Created";
-            IsSuccesfull = true;
+            successConfirmation();
+            manager.PlayersList.Add(player);
 
 
         }
@@ -30,10 +31,12 @@ public class createState : BaseState
         {
             message = "Account Already Exists";
         }
+        manager.SendMessageToClient(message, player.ConnectionID);
+        message = "none";
     }
 
-    public override void OnReturnMessage(StateManager manager, string Input1,
-        string Input2, int ConnectionID)
+    public override void OnReturnMessage(StateManager manager,
+        Player player, string Input2)
     {
 
     }

@@ -7,15 +7,18 @@ public abstract class BaseState
 {
     public UIStates EnumState;
     public string message = "none";
-    public bool IsSuccesfull;
 
     public abstract void Start();
-    public abstract void OnContinueMessage(StateManager manager, string Input1, 
-        string Input2,int ConnectionID);
-    public abstract void OnReturnMessage(StateManager manager, string Input1,
-        string Input2,  int ConnectionID);
+    public abstract void OnContinueMessage(StateManager manager, 
+        Player player, string Input2);
+    public abstract void OnReturnMessage(StateManager manager, 
+        Player player, string Input2);
  
+    public void successConfirmation()
+    {
+        message = "success," + message;
 
+    }
 
 
 }

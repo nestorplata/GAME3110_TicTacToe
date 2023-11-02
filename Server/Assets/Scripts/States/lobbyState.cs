@@ -10,48 +10,47 @@ public class lobbyState : BaseState
         EnumState = UIStates.lobby;
     }
 
-    public override void OnContinueMessage(StateManager manager, string Input1,
-        string Input2, int ConnectionID)
+    public override void OnContinueMessage(StateManager manager,
+        Player player, string Input2)
     {
-        bool IsRoomJoined = false;
-
+        //manager.gameRoomList.Find(GameroomID)
         foreach (Gameroom room in manager.gameRoomList)
         {
             if (room.GameroomID == Input2)
             {
-                room.PlayersList.Add(manager.PlayersList[0]);
-                IsRoomJoined = true;
+                
+                room.PlayersList.Add(player);
                 message = "GameRoom Joined";
                 break;
             }
         }
-        if (!IsRoomJoined)
+        if (manager.gameRoomList.Count<1)
         {
             Gameroom room = new Gameroom();
-            room.PlayersList.Add(manager.PlayersList[0]);
+            room.PlayersList.Add(player);
             room.GameroomID = Input2;
             manager.gameRoomList.Add(room);
             message = "GameRoom Created";
 
         }
-        IsSuccesfull = true;
+        successConfirmation();
 
-
+        manager.SendMessageToClient(message, player.ConnectionID);
+        message = "none";
     }
 
-    public override void OnReturnMessage(StateManager manager, string Input1,
-        string Input2, int ConnectionID)
+    public override void OnReturnMessage(StateManager manager,
+        Player player, string Input2)
     {
         foreach (Gameroom room in manager.gameRoomList)
         {
             if (room.GameroomID == Input2)
             {
-                Player player = new Player();
-                player.Username = Input1;
-                player.ConnectionID= ConnectionID;
                 room.PlayersList.Remove(player);
                 message = "Logged Off";
-                IsSuccesfull = true;
+                //successConfirmation();
+                manager.SendMessageToClient(message, player.ConnectionID);
+                message = "none";
 
                 break;
             }

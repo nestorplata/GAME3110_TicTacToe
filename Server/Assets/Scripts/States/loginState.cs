@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
+using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
 public class loginState : BaseState
@@ -13,10 +14,10 @@ public class loginState : BaseState
         EnumState = UIStates.login;
     }
 
-    public override void OnContinueMessage(StateManager manager, string Input1,
-        string Input2, int ConnectionID)
+    public override void OnContinueMessage(StateManager manager,
+        Player player, string Input2)
     {
-        string pathfile = "Accounts\\" + Input1 + ".txt";
+        string pathfile = "Accounts\\" + player.Username + ".txt";
         if (File.Exists(pathfile))
         {
             using (StreamReader sr = new StreamReader(pathfile))
@@ -24,10 +25,7 @@ public class loginState : BaseState
                 if (Input2 == sr.ReadLine())
                 {
                     message = "Login Succeded";
-                    IsSuccesfull = true;
-                    Player player = new Player();
-                    player.Username = Input1;
-                    player.ConnectionID = ConnectionID;
+                    successConfirmation();
                     manager.PlayersList.Add(player);
                 }
                 else
@@ -41,10 +39,13 @@ public class loginState : BaseState
             message = "Wrong Username";
 
         }
+        manager.SendMessageToClient(message, player.ConnectionID);
+        message = "none";
+
     }
 
-    public override void OnReturnMessage(StateManager manager, string Input1,
-        string Input2, int ConnectionID)
+    public override void OnReturnMessage(StateManager manager,
+        Player player, string Input2)
     {
 
     }

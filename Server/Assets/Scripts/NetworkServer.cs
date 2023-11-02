@@ -8,12 +8,15 @@ using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.Networking.PlayerConnection;
+using UnityEditor.MemoryProfiler;
+using System.Linq;
 
 public class NetworkServer : MonoBehaviour
 {
+    StateManager stateManager;
+
     public NetworkDriver networkDriver;
     private NativeList<NetworkConnection> networkConnections;
-    public StateManager stateManager;
 
     NetworkPipeline reliableAndInOrderPipeline;
     NetworkPipeline nonReliableNotInOrderedPipeline;
@@ -37,6 +40,7 @@ public class NetworkServer : MonoBehaviour
             networkDriver.Listen();
 
         networkConnections = new NativeList<NetworkConnection>(MaxNumberOfClientConnections, Allocator.Persistent);
+        stateManager=GetComponent<StateManager>();
     }
 
     void OnDestroy()
@@ -130,6 +134,7 @@ public class NetworkServer : MonoBehaviour
             return false;
 
         networkConnections.Add(connection);
+        SendMessageToClient(connection.InternalId.ToString(), connection);
         return true;
     }
 
@@ -146,37 +151,7 @@ public class NetworkServer : MonoBehaviour
     {
         Debug.Log("Msg received = " + msg);
         String[] Information = msg.Split(',');
-        int ConnectionID=stateManager.MessageRecieved(Information);
-        string msgToSend = stateManager.GetMessage();
- 
-        foreach (NetworkConnection connection in networkConnections)
-        {
-
-
-            //if (connection.InternalId == ConnectionID) //send message to just one player
-            //{
-                    SendMessageToClient(msgToSend, connection);
-            //}
-            //else //if player is in 
-            //{
-            //foreach (Gameroom room in stateManager.gameRoomList)
-            //{
-            //    if (room.GameroomID == Information[2])
-            //    {
-            //        foreach (Player player in room.PlayersList)
-            //        {
-            //            if (player.ConnectionID == connection.InternalId)
-            //            {
-            //                SendMessageToClient(msgToSend, connection);
-            //            }
-
-            //        }
-            //    }
-
-            //}
-            //}
-
-        }
+        stateManager.MessageRecieved(Information);
     }
 
     public void SendMessageToClient(string msg, NetworkConnection networkConnection)
@@ -194,6 +169,11 @@ public class NetworkServer : MonoBehaviour
         networkDriver.EndSend(streamWriter);
 
         buffer.Dispose();
+    }
+
+    public NativeList<NetworkConnection> GetNetworkConnections()
+    {
+        return networkConnections;
     }
 
 }

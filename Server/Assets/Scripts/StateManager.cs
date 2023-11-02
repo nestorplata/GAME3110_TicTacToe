@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Networking.Transport;
+using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
 public enum UIStates
@@ -19,6 +21,7 @@ public class StateManager : MonoBehaviour
     public List<Player> PlayersList;
     List<BaseState> stateList = new List<BaseState>();
 
+    NetworkServer Server;
     BaseState CurrentState;
     loginState StateLogin = new loginState();
     lobbyState StateLobby= new lobbyState();
@@ -31,6 +34,7 @@ public class StateManager : MonoBehaviour
     {
         gameRoomList = new List<Gameroom>();
         PlayersList = new List<Player>();
+        Server = GetComponent<NetworkServer>();
 
         stateList.Add(StateLogin);
         stateList.Add(StateLobby);
@@ -46,16 +50,16 @@ public class StateManager : MonoBehaviour
             CurrentState = stateList[0];
     }
 
-    public int MessageRecieved(string[] Information )
+    public void MessageRecieved(string[] Information )
     {
+        Player player = new Player();
         string NewState = Information[0];
-        string Input1 = Information[1];
+        player.Username = Information[1];
         string Input2 = Information[2];
 
         int type;
-        int ConnectionID;
         int.TryParse(Information[3], out type);
-        int.TryParse(Information[4], out ConnectionID);
+        int.TryParse(Information[4], out player.ConnectionID);
         foreach(BaseState state in stateList)
         {
             if (state.EnumState.ToString() == NewState)
@@ -64,28 +68,54 @@ public class StateManager : MonoBehaviour
                 break;
             }
         }
-
         switch(type)
         {
             case 0:
-                CurrentState.OnContinueMessage(this, Input1, Input2,  ConnectionID);
+                CurrentState.OnContinueMessage(this, player, Input2);
                 break;
             case 1:
-                CurrentState.OnReturnMessage(this, Input1, Input2, ConnectionID);
+                CurrentState.OnReturnMessage(this, player, Input2);
                 break;
 
         }
-        return ConnectionID;
-    }
-    public string GetMessage()
-    {
-        string message = CurrentState.message;
-        if (CurrentState.IsSuccesfull)
+
+        Gameroom CurrentRoom;
+
+        foreach (Gameroom room in gameRoomList)
         {
-            message = "success,"+ CurrentState.message;
-            CurrentState.IsSuccesfull = false;
+            if (room.PlayersList.Contains(player))
+            {
+                CurrentRoom = room;
+            }
         }
-        return message;
+
+
+                //foreach (Gameroom room in stateManager.gameRoomList)
+                //{
+                //    if (room.GameroomID == Information[2])
+                //    {
+                //        foreach (Player player in room.PlayersList)
+                //        {
+                //            if (player.ConnectionID == connection.InternalId)
+                //            {
+                //                SendMessageToClient(msgToSend, connection);
+
+                //            }
+
+                //        }
+                //    }
+
+
+    }
+    
+
+    public void SendMessageToClient(string message, int ID)
+    {
+        foreach (NetworkConnection connection in Server.GetNetworkConnections())
+        {
+            Server.SendMessageToClient(message, connection);
+        }
+
 
     }
     public void Update()

@@ -11,47 +11,59 @@ public class GameroomState : BaseState
     public override void Start()
     {
         EnumState = UIStates.room;
-        message = "waiting for new player";
     }
 
-    public override void OnContinueMessage(StateManager manager, string Input1,
-        string Input2, int ConnectionID)
+    public override void OnContinueMessage(StateManager manager,
+        Player player, string Input2)
     {
+
         foreach (Gameroom room in manager.gameRoomList)
         {
-
-            if (room.PlayersList.Count > 1 && room.GameroomID == Input2)
+            if(room.GameroomID == Input2)   
             {
                 message = "Moved to GamePlay";
-                IsSuccesfull = true;
 
-                if (room.PlayersList.Count == 2)
+                switch (room.PlayersList.Count)
                 {
-                    message = message + "As Player";
-                }
-                else
-                {
-                    message = "Observer " + message;
+                    case 1:
+                        message = "waiting for new player";
+                        manager.SendMessageToClient(message, player.ConnectionID);
+                        break;
+                    case 2:
+                        successConfirmation();
+                        message = message + " As Player";
+                        foreach (Player players in room.PlayersList)
+                        {
+                            manager.SendMessageToClient(message, players.ConnectionID);
+
+                        }
+                        break;
+                    default :
+                        successConfirmation();
+                        message = "Observer " + message;
+                        manager.SendMessageToClient(message, player.ConnectionID);
+                        break;
 
                 }
+                break;
             }
+
 
         }
     }
 
-    public override void OnReturnMessage(StateManager manager, string Input1,
-        string Input2, int ConnectionID)
+    public override void OnReturnMessage(StateManager manager,
+        Player player, string Input2)
     {
         foreach (Gameroom room in manager.gameRoomList)
         {
             if (room.GameroomID == Input2)
             {
-                Player player = new Player();
-                player.ConnectionID = ConnectionID;
-                player.Username = Input1;
                 room.PlayersList.Remove(player);
                 message = "Removed from GameRoom ";
-                IsSuccesfull = true;
+                //successConfirmation();
+                manager.SendMessageToClient(message, player.ConnectionID);
+                message = "waiting for new player";
 
                 break;
             }

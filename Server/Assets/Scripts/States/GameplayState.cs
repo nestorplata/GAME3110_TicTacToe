@@ -10,25 +10,26 @@ public class GameplayState : BaseState
         EnumState = UIStates.game;
     }
 
-    public override void OnContinueMessage(StateManager manager, string Input1,
-        string Input2, int ConnectionID)
+    public override void OnContinueMessage(StateManager manager,
+        Player player, string Input2)
     {
         message = Input2;
+        manager.SendMessageToClient(message, player.ConnectionID);
+
     }
 
-    public override void OnReturnMessage(StateManager manager, string Input1,
-        string Input2, int ConnectionID)
+    public override void OnReturnMessage(StateManager manager,
+        Player player, string Input2)
     {
         foreach (Gameroom room in manager.gameRoomList)
         {
-            if (room.GameroomID == Input2)
+            if (room.PlayersList.Contains(player)) 
             {
-                Player player = new Player();
-                player.ConnectionID = ConnectionID;
-                player.Username = Input1;
                 room.PlayersList.Remove(player);
                 message = "Removed from Gameplay and Gameroom";
-                IsSuccesfull = true;
+                //successConfirmation();
+                manager.SendMessageToClient(message, player.ConnectionID);
+                message = "none";
 
                 break;
             }
