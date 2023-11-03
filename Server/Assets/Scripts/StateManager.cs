@@ -21,7 +21,6 @@ public class StateManager : MonoBehaviour
     public List<Player> PlayersList;
     List<BaseState> stateList = new List<BaseState>();
 
-    NetworkServer Server;
     BaseState CurrentState;
     loginState StateLogin = new loginState();
     lobbyState StateLobby= new lobbyState();
@@ -32,9 +31,11 @@ public class StateManager : MonoBehaviour
 
     private void Start()
     {
+        NetworkServerProcessing.SetStateManager(this);
+
+
         gameRoomList = new List<Gameroom>();
         PlayersList = new List<Player>();
-        Server = GetComponent<NetworkServer>();
 
         stateList.Add(StateLogin);
         stateList.Add(StateLobby);
@@ -50,7 +51,7 @@ public class StateManager : MonoBehaviour
             CurrentState = stateList[0];
     }
 
-    public void MessageRecieved(string[] Information )
+    public void MessageRecieved(string[] Information, int ID )
     {
         Player player = new Player();
         string NewState = Information[0];
@@ -59,8 +60,8 @@ public class StateManager : MonoBehaviour
 
         int type;
         int.TryParse(Information[3], out type);
-        int.TryParse(Information[4], out player.ConnectionID);
-        foreach(BaseState state in stateList)
+        player.ConnectionID = ID;
+        foreach (BaseState state in stateList)
         {
             if (state.EnumState.ToString() == NewState)
             {
@@ -68,7 +69,7 @@ public class StateManager : MonoBehaviour
                 break;
             }
         }
-        switch(type)
+        switch (type)
         {
             case 0:
                 CurrentState.OnContinueMessage(this, player, Input2);
@@ -83,20 +84,12 @@ public class StateManager : MonoBehaviour
 
     public void SendMessageToClient(string message, int ID)
     {
-        foreach (NetworkConnection connection in Server.GetNetworkConnections())
-        {
-            if(connection.InternalId == ID)
-            {
-                Server.SendMessageToClient(message, connection);
-            }
-        }
-
-
+        NetworkServerProcessing.SendMessageToClient(message, ID, TransportPipeline.ReliableAndInOrder);
     }
+
     public void Update()
     {
-    }
-    // Start is called before the first frame update
 
+    }
 
 }

@@ -25,7 +25,7 @@ public class loginState : BaseState
                 if (Input2 == sr.ReadLine())
                 {
                     manager.PlayersList.Add(player);
-                    message = "Login Succeded";
+                    message = "Logged in";
                     successConfirmation();
                 }
                 else
