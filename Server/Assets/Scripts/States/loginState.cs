@@ -24,9 +24,9 @@ public class loginState : BaseState
             {
                 if (Input2 == sr.ReadLine())
                 {
+                    manager.PlayersList.Add(player);
                     message = "Login Succeded";
                     successConfirmation();
-                    manager.PlayersList.Add(player);
                 }
                 else
                 {
@@ -40,7 +40,6 @@ public class loginState : BaseState
 
         }
         manager.SendMessageToClient(message, player.ConnectionID);
-        message = "none";
 
     }
 

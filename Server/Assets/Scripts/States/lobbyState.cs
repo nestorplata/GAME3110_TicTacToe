@@ -13,18 +13,7 @@ public class lobbyState : BaseState
     public override void OnContinueMessage(StateManager manager,
         Player player, string Input2)
     {
-        //manager.gameRoomList.Find(GameroomID)
-        foreach (Gameroom room in manager.gameRoomList)
-        {
-            if (room.GameroomID == Input2)
-            {
-                
-                room.PlayersList.Add(player);
-                message = "GameRoom Joined";
-                break;
-            }
-        }
-        if (manager.gameRoomList.Count<1)
+        if (manager.gameRoomList.Count < 1)
         {
             Gameroom room = new Gameroom();
             room.PlayersList.Add(player);
@@ -33,28 +22,45 @@ public class lobbyState : BaseState
             message = "GameRoom Created";
 
         }
-        successConfirmation();
+        else
+        {
+            foreach (Gameroom room in manager.gameRoomList)
+            {
+                if (room.GameroomID == Input2)
+                {
 
+                    room.PlayersList.Add(player);
+                    message = "GameRoom Joined";
+                    break;
+                }
+            }
+        }
+
+
+        successConfirmation();
         manager.SendMessageToClient(message, player.ConnectionID);
-        message = "none";
     }
 
     public override void OnReturnMessage(StateManager manager,
         Player player, string Input2)
     {
-        foreach (Gameroom room in manager.gameRoomList)
+        message = "unable to log off";
+        for (int i = 0; i < manager.PlayersList.Count; i++)
         {
-            if (room.GameroomID == Input2)
+            if (manager.PlayersList[i].ConnectionID == player.ConnectionID)
             {
-                room.PlayersList.Remove(player);
+                manager.PlayersList.RemoveAt(i);
                 message = "Logged Off";
-                //successConfirmation();
-                manager.SendMessageToClient(message, player.ConnectionID);
-                message = "none";
-
                 break;
             }
         }
+        foreach (Player n_player in manager.PlayersList)
+        {
+
+        }
+   
+        manager.SendMessageToClient(message, player.ConnectionID);
+
     }
 
 }

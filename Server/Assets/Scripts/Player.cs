@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
@@ -7,6 +8,4 @@ public class Player
 {
     public int ConnectionID =-1;
     public string Username = "none";
-    // Start is called before the first frame update
-
 }

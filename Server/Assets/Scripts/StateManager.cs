@@ -73,39 +73,11 @@ public class StateManager : MonoBehaviour
             case 0:
                 CurrentState.OnContinueMessage(this, player, Input2);
                 break;
-            case 1:
+            default:
                 CurrentState.OnReturnMessage(this, player, Input2);
                 break;
 
         }
-
-        Gameroom CurrentRoom;
-
-        foreach (Gameroom room in gameRoomList)
-        {
-            if (room.PlayersList.Contains(player))
-            {
-                CurrentRoom = room;
-            }
-        }
-
-
-                //foreach (Gameroom room in stateManager.gameRoomList)
-                //{
-                //    if (room.GameroomID == Information[2])
-                //    {
-                //        foreach (Player player in room.PlayersList)
-                //        {
-                //            if (player.ConnectionID == connection.InternalId)
-                //            {
-                //                SendMessageToClient(msgToSend, connection);
-
-                //            }
-
-                //        }
-                //    }
-
-
     }
     
 
@@ -113,7 +85,10 @@ public class StateManager : MonoBehaviour
     {
         foreach (NetworkConnection connection in Server.GetNetworkConnections())
         {
-            Server.SendMessageToClient(message, connection);
+            if(connection.InternalId == ID)
+            {
+                Server.SendMessageToClient(message, connection);
+            }
         }
 
 

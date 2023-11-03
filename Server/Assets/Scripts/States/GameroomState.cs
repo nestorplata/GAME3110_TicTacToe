@@ -21,7 +21,7 @@ public class GameroomState : BaseState
         {
             if(room.GameroomID == Input2)   
             {
-                message = "Moved to GamePlay";
+                message = "Moved to Gameplay";
 
                 switch (room.PlayersList.Count)
                 {
@@ -31,7 +31,7 @@ public class GameroomState : BaseState
                         break;
                     case 2:
                         successConfirmation();
-                        message = message + " As Player";
+                        message = message + " as player";
                         foreach (Player players in room.PlayersList)
                         {
                             manager.SendMessageToClient(message, players.ConnectionID);
@@ -40,7 +40,7 @@ public class GameroomState : BaseState
                         break;
                     default :
                         successConfirmation();
-                        message = "Observer " + message;
+                        message = message+ " as observer";
                         manager.SendMessageToClient(message, player.ConnectionID);
                         break;
 
@@ -55,15 +55,23 @@ public class GameroomState : BaseState
     public override void OnReturnMessage(StateManager manager,
         Player player, string Input2)
     {
+        message = "Unable to be removed from GameRoom";
+
         foreach (Gameroom room in manager.gameRoomList)
         {
             if (room.GameroomID == Input2)
             {
-                room.PlayersList.Remove(player);
-                message = "Removed from GameRoom ";
-                //successConfirmation();
+                for (int i = 0; i < room.PlayersList.Count; i++)
+                {
+                    if (room.PlayersList[i].ConnectionID == player.ConnectionID)
+                    {
+                        room.PlayersList.RemoveAt(i);
+                        message = "Removed from GameRoom";
+                        break;
+                    }
+                }
+
                 manager.SendMessageToClient(message, player.ConnectionID);
-                message = "waiting for new player";
 
                 break;
             }

@@ -21,18 +21,15 @@ public class createState : BaseState
             {
                 sw.WriteLine(Input2);
             }
+            manager.PlayersList.Add(player);
             message = "Account Created";
             successConfirmation();
-            manager.PlayersList.Add(player);
-
-
         }
         else
         {
             message = "Account Already Exists";
         }
         manager.SendMessageToClient(message, player.ConnectionID);
-        message = "none";
     }
 
     public override void OnReturnMessage(StateManager manager,
