@@ -53,12 +53,7 @@ public class lobbyState : BaseState
                 message = "Logged Off";
                 break;
             }
-        }
-        foreach (Player n_player in manager.PlayersList)
-        {
-
-        }
-   
+        }   
         manager.SendMessageToClient(message, player.ConnectionID);
 
     }

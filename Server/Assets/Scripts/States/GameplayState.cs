@@ -15,18 +15,20 @@ public class GameplayState : BaseState
     {
         foreach (Gameroom room in manager.gameRoomList)
         {
-            if(room.PlayersList.Contains(player))
+            if(room.isOnRoom(player))
             {
                 foreach (Player n_player in room.PlayersList)
                 {
-                    
-                    if(n_player.ConnectionID !=player.ConnectionID)
+                    if (n_player.Username != player.Username)
                     {
                         manager.SendMessageToClient(Input2, n_player.ConnectionID);
                     }
                 }
                 break;
             }
+
+            
+            
         }
 
     }
@@ -38,7 +40,7 @@ public class GameplayState : BaseState
 
         foreach (Gameroom room in manager.gameRoomList)
         {
-            if (room.GameroomID == Input2)
+            if (room.isOnRoom(player))
             {
                 for (int i = 0; i < room.PlayersList.Count; i++)
                 {
@@ -49,12 +51,12 @@ public class GameplayState : BaseState
                         break;
                     }
                 }
-
-                manager.SendMessageToClient(message, player.ConnectionID);
-
                 break;
             }
         }
+
+        manager.SendMessageToClient(message, player.ConnectionID);
+
     }
 
 }
