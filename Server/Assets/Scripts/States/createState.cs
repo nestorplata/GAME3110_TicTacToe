@@ -5,37 +5,26 @@ using UnityEngine;
 
 public class createState : BaseState
 {
-    public override void Start()
-    {
-        EnumState = UIStates.create;
-    }
 
-    public override void OnContinueMessage(StateManager manager,
-        Player player, string Input2)
+    public override void OnRecievedMessage(StateManager manager,
+    int signifier, int ID, string[] msg)
     {
-        string pathfile = "Accounts\\" + player.Username + ".txt";
 
-        if (!File.Exists(pathfile))
+        if (!File.Exists("Accounts\\" + msg[0] + ".txt"))
         {
-            using (StreamWriter sw = new StreamWriter(pathfile))
+            using (StreamWriter sw = new StreamWriter("Accounts\\" + msg[0] + ".txt"))
             {
-                sw.WriteLine(Input2);
+                sw.WriteLine(msg[1]);
             }
-            manager.PlayersList.Add(player);
-            message = "Account Created";
-            successConfirmation();
+            manager.ReturnPlayer(ID).Username = msg[0];
+            Response(ServerToClientSignifiers.BasicSuccess);
         }
         else
         {
-            message = "Account Already Exists";
+            Response(ServerToClientSignifiers.BasicFailure);
         }
-        manager.SendMessageToClient(message, player.ConnectionID);
+        manager.SendMessageToClient(message, ID);
     }
 
-    public override void OnReturnMessage(StateManager manager,
-        Player player, string Input2)
-    {
-
-    }
 
 }

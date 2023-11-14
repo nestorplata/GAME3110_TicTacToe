@@ -7,5 +7,5 @@ using UnityEngine;
 public class Player
 {
     public int ConnectionID =-1;
-    public string Username = "none";
+    public string Username = "";
 }

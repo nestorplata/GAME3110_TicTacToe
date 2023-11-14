@@ -3,93 +3,138 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Networking.Transport;
 using UnityEditor.MemoryProfiler;
+using UnityEditor.VersionControl;
 using UnityEngine;
 
-public enum UIStates
-{
-    login,
-    create,
-    lobby,
-    room,
-    game
-}
+
 
 
 public class StateManager : MonoBehaviour
 {
-    public List<Gameroom> gameRoomList;
-    public List<Player> PlayersList;
-    List<BaseState> stateList = new List<BaseState>();
+    public List<Gameroom> GameroomList = new List<Gameroom>();
+    public List<Player> PlayersList = new List<Player>();
 
-    BaseState CurrentState;
     loginState StateLogin = new loginState();
-    lobbyState StateLobby= new lobbyState();
-    createState LoginCrate = new createState();
+    createState StateCreate = new createState();
+    lobbyState StateLobby = new lobbyState();
     GameroomState StateGameroom = new GameroomState();
     GameplayState StateGameplay = new GameplayState();
-
 
     private void Start()
     {
         NetworkServerProcessing.SetStateManager(this);
-
-
-        gameRoomList = new List<Gameroom>();
-        PlayersList = new List<Player>();
-
-        stateList.Add(StateLogin);
-        stateList.Add(StateLobby);
-        stateList.Add(LoginCrate);
-        stateList.Add(StateGameroom);
-        stateList.Add(StateGameplay);
-
-        foreach (BaseState state in stateList)
-        {
-            state.Start();
-        }
-
-            CurrentState = stateList[0];
     }
 
-    public void MessageRecieved(string[] Information, int ID )
+    public void MessageRecieved(int CTSsignifier, int type, int ID, string[] msg )
     {
-        Player player = new Player();
-        string NewState = Information[0];
-        player.Username = Information[1];
-        string Input2 = Information[2];
-
-        int type;
-        int.TryParse(Information[3], out type);
-        player.ConnectionID = ID;
-        foreach (BaseState state in stateList)
+        switch (CTSsignifier)
         {
-            if (state.EnumState.ToString() == NewState)
-            {
-                CurrentState = state;
+            case ClientToServerSignifiers.login:
+                StateLogin.OnRecievedMessage(this, type, ID, msg);
                 break;
-            }
-        }
-        switch (type)
-        {
-            case 0:
-                CurrentState.OnContinueMessage(this, player, Input2);
+            case ClientToServerSignifiers.create:
+                StateCreate.OnRecievedMessage(this, type, ID, msg);
+                break;
+            case ClientToServerSignifiers.lobby:
+                StateLobby.OnRecievedMessage(this, type, ID, msg);
+                break;
+            case ClientToServerSignifiers.room:
+                StateGameroom.OnRecievedMessage(this, type, ID, msg);
+                break;
+            case ClientToServerSignifiers.game:
+                StateGameplay.OnRecievedMessage(this, type, ID, msg);
                 break;
             default:
-                CurrentState.OnReturnMessage(this, player, Input2);
+                Debug.Log("Unable to Process state");
                 break;
-
         }
     }
-    
+
 
     public void SendMessageToClient(string message, int ID)
     {
         NetworkServerProcessing.SendMessageToClient(message, ID, TransportPipeline.ReliableAndInOrder);
     }
+    
+    public Player ReturnPlayer(int ID)
+    { 
+        foreach (Player player in PlayersList) 
+        {
+            if(player.ConnectionID==ID)
+            {
+                return player;
+            }
+        }
+        return null;
+    }
 
-    public void Update()
+    public Player ReturnPlayer(string Username)
     {
+        foreach (Player player in PlayersList)
+        {
+            if (player.Username == Username)
+            {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    public Gameroom ReturnGameroom(string ID)
+    {
+        foreach (Gameroom room in GameroomList)
+        {
+            if (room.GameroomID == ID)
+            {
+                return room;
+            }
+        }
+        return null;
+    }
+
+    public Gameroom ReturnGameroom(int ID)
+    {
+        foreach (Gameroom room in GameroomList)
+        {
+            foreach (Player player in room.PlayersList)
+            {
+                if (player.ConnectionID == ID)
+                {
+                    return room;
+                }
+            }
+        }
+        return null;
 
     }
 
 }
+
+#region Protocol Signifiers
+static public class ClientToServerSignifiers
+{
+    public const int none = 0;
+    public const int login = 1;
+    public const int create = 2;
+    public const int lobby = 3;
+    public const int room = 4;
+    public const int game = 5;
+}
+
+static public class ClientMessageType
+{
+    public const int OnContinue = 1;
+    public const int OnReturn = 2;
+    public const int OnSpecial = 3;
+}
+
+static public class ServerToClientSignifiers
+{
+    public const int BasicSuccess = 0;
+    public const int SuccessA = 1;
+    public const int ReturnSuccess = 2;
+    public const int BasicFailure = 4;
+    public const int FailureA = 5;
+    public const int FailureB = 6;
+}
+#endregion

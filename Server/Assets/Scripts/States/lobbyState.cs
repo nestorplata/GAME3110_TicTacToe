@@ -5,57 +5,38 @@ using UnityEngine;
 public class lobbyState : BaseState
 {
 
-    public override void Start()
+    public override void OnRecievedMessage(StateManager manager,
+    int signifier, int ID, string[] msg)
     {
-        EnumState = UIStates.lobby;
-    }
-
-    public override void OnContinueMessage(StateManager manager,
-        Player player, string Input2)
-    {
-        if (manager.gameRoomList.Count < 1)
+        switch (signifier)
         {
-            Gameroom room = new Gameroom();
-            room.PlayersList.Add(player);
-            room.GameroomID = Input2;
-            manager.gameRoomList.Add(room);
-            message = "GameRoom Created";
+            case ClientMessageType.OnContinue:
 
-        }
-        else
-        {
-            foreach (Gameroom room in manager.gameRoomList)
-            {
-                if (room.GameroomID == Input2)
+                if (manager.ReturnGameroom(msg[0])!=null)
                 {
+                    manager.ReturnGameroom(msg[0]).PlayersList.Add(manager.ReturnPlayer(ID));
+                    Response(ServerToClientSignifiers.SuccessA);
 
-                    room.PlayersList.Add(player);
-                    message = "GameRoom Joined";
-                    break;
                 }
-            }
+                else
+                {
+                    Gameroom room = new Gameroom();
+                    room.PlayersList.Add(manager.ReturnPlayer(ID));
+                    room.GameroomID = msg[0];
+                    manager.GameroomList.Add(room);
+                    Response(ServerToClientSignifiers.BasicSuccess);
+
+                }
+                break;
+
+            case ClientMessageType.OnReturn:
+                manager.ReturnPlayer(ID).Username = "";
+                Response(ServerToClientSignifiers.ReturnSuccess);
+                break;
+
         }
 
-
-        successConfirmation();
-        manager.SendMessageToClient(message, player.ConnectionID);
-    }
-
-    public override void OnReturnMessage(StateManager manager,
-        Player player, string Input2)
-    {
-        message = "unable to log off";
-        for (int i = 0; i < manager.PlayersList.Count; i++)
-        {
-            if (manager.PlayersList[i].ConnectionID == player.ConnectionID)
-            {
-                manager.PlayersList.RemoveAt(i);
-                message = "Logged Off";
-                break;
-            }
-        }   
-        manager.SendMessageToClient(message, player.ConnectionID);
+        manager.SendMessageToClient(message, ID);
 
     }
-
 }

@@ -5,23 +5,23 @@ using UnityEngine;
 static public class NetworkServerProcessing
 {
 
+
     #region Send and Receive Data Functions
     static public void ReceivedMessageFromClient(string msg, int clientConnectionID, TransportPipeline pipeline)
     {
         Debug.Log("Network msg received =  " + msg + ", from connection id = " + clientConnectionID + ", from pipeline = " + pipeline);
 
         string[] csv = msg.Split(',');
-        //int signifier = int.Parse(csv[0]);
-        stateManager.MessageRecieved(csv, clientConnectionID);
+        int CTVsignifier = int.Parse(csv[0]);
+        int type = int.Parse(csv[1]);
+        string[] data = csv;
+        if (csv.Length>2)
+        {
+            data= csv[2].Split('_');
+        }
+        stateManager.MessageRecieved(CTVsignifier, type, clientConnectionID, data);
 
-        //if (signifier == ClientToServerSignifiers.asd)
-        //{
 
-        //}
-        // else if (signifier == ClientToServerSignifiers.asd)
-        // {
-
-        // }
 
         //gameLogic.DoSomething();
     }
@@ -37,10 +37,20 @@ static public class NetworkServerProcessing
     static public void ConnectionEvent(int clientConnectionID)
     {
         Debug.Log("Client connection, ID == " + clientConnectionID);
+        Player player = new Player();
+        player.ConnectionID = clientConnectionID;
+        stateManager.PlayersList.Add(player);
     }
     static public void DisconnectionEvent(int clientConnectionID)
     {
         Debug.Log("Client disconnection, ID == " + clientConnectionID);
+        for (int i = 0; i < stateManager.PlayersList.Count; i++)
+        {
+            if (stateManager.PlayersList[i].ConnectionID==clientConnectionID)
+            {
+                stateManager.PlayersList.RemoveAt(i);
+            }
+        }
     }
 
     #endregion
@@ -48,40 +58,26 @@ static public class NetworkServerProcessing
     #region Setup
     static NetworkServer networkServer;
     static StateManager stateManager;
-    //static GameLogic gameLogic;
 
     static public void SetNetworkServer(NetworkServer NetworkServer)
     {
         networkServer = NetworkServer;
     }
-    static public NetworkServer GetNetworkServer()
-    {
-        return networkServer;
-    }
-
     static public void SetStateManager(StateManager manager)
     {
         stateManager = manager;
     }
 
-    //static public void SetGameLogic(GameLogic GameLogic)
-    //{
-    //    gameLogic = GameLogic;
-    //}
+    static public NetworkServer GetNetworkServer()
+    {
+        return networkServer;
+    }
+
 
     #endregion
 }
 
-#region Protocol Signifiers
-static public class ClientToServerSignifiers
-{
-    public const int asd = 1;
-}
 
-static public class ServerToClientSignifiers
-{
-    public const int asd = 1;
-}
 
-#endregion
+
 

@@ -4,58 +4,42 @@ using UnityEngine;
 
 public class GameplayState : BaseState
 {
-
-    public override void Start()
+    public override void OnRecievedMessage(StateManager manager,
+        int signifier, int ID, string[] msg)
     {
-        EnumState = UIStates.game;
-    }
-
-    public override void OnContinueMessage(StateManager manager,
-        Player player, string Input2)
-    {
-        foreach (Gameroom room in manager.gameRoomList)
+        switch (signifier)
         {
-            if(room.isOnRoom(player))
-            {
-                foreach (Player n_player in room.PlayersList)
+            case ClientMessageType.OnContinue:
+                foreach (Player n_player in manager.ReturnGameroom(ID).PlayersList)
                 {
-                    if (n_player.Username != player.Username)
+                    if (n_player.ConnectionID != ID)
                     {
-                        manager.SendMessageToClient(Input2, n_player.ConnectionID);
+                        message = manager.ReturnPlayer(ID).Username + " Sent this: \"" + msg[0] + "\"";
+                        Response(ServerToClientSignifiers.SuccessA, message);
+                        manager.SendMessageToClient(message, n_player.ConnectionID);
                     }
                 }
                 break;
-            }
 
-            
-            
-        }
-
-    }
-
-    public override void OnReturnMessage(StateManager manager,
-        Player player, string Input2)
-    {
-        message = "Unable to be removed from Gameplay";
-
-        foreach (Gameroom room in manager.gameRoomList)
-        {
-            if (room.isOnRoom(player))
-            {
-                for (int i = 0; i < room.PlayersList.Count; i++)
+            case ClientMessageType.OnReturn:
+                for (int i = 0; i < manager.ReturnGameroom(ID).PlayersList.Count; i++)
                 {
-                    if (room.PlayersList[i].ConnectionID == player.ConnectionID)
+                    if (manager.ReturnGameroom(ID).PlayersList[i].ConnectionID == ID)
                     {
-                        room.PlayersList.RemoveAt(i);
-                        message = "Removed from Gameplay";
+                        manager.ReturnGameroom(ID).PlayersList.RemoveAt(i);
+                        Response(ServerToClientSignifiers.SuccessA);
                         break;
                     }
                 }
+                manager.SendMessageToClient(message,ID);
                 break;
-            }
-        }
 
-        manager.SendMessageToClient(message, player.ConnectionID);
+            case ClientMessageType.OnSpecial:
+                Response(ServerToClientSignifiers.BasicSuccess, message);
+                manager.SendMessageToClient(message, ID);
+                break;
+
+        }
 
     }
 

@@ -7,47 +7,36 @@ using UnityEngine;
 
 public class loginState : BaseState
 {
-
-
-    public override void Start()
+    public override void OnRecievedMessage(StateManager manager,
+        int signifier, int ID, string[] msg)
     {
-        EnumState = UIStates.login;
-    }
-
-    public override void OnContinueMessage(StateManager manager,
-        Player player, string Input2)
-    {
-        string pathfile = "Accounts\\" + player.Username + ".txt";
-        if (File.Exists(pathfile))
+        if (File.Exists("Accounts\\" + msg[0] + ".txt"))
         {
-            using (StreamReader sr = new StreamReader(pathfile))
+            using (StreamReader sr = new StreamReader("Accounts\\" + msg[0] + ".txt"))
             {
-                if (Input2 == sr.ReadLine())
+                if (msg[1] == sr.ReadLine())
                 {
-                    manager.PlayersList.Add(player);
-                    message = "Logged in";
-                    successConfirmation();
+                    if (manager.ReturnPlayer(msg[0])==null)
+                    {
+                        manager.ReturnPlayer(ID).Username = msg[0];
+                        Response(ServerToClientSignifiers.BasicSuccess);
+                    }
+                    else
+                    {
+                        Response(ServerToClientSignifiers.FailureB);
+                    }
                 }
                 else
                 {
-                    message = "Wrong Password";
+                    Response(ServerToClientSignifiers.FailureA);
                 }
             }
         }
         else
         {
-            message = "Wrong Username";
-
+            Response(ServerToClientSignifiers.BasicFailure);
         }
-        manager.SendMessageToClient(message, player.ConnectionID);
-
+        manager.SendMessageToClient(message, ID);
     }
-
-    public override void OnReturnMessage(StateManager manager,
-        Player player, string Input2)
-    {
-
-    }
-
 
 }
