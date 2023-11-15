@@ -8,4 +8,5 @@ public class Player
 {
     public int ConnectionID =-1;
     public string Username = "";
+    public int type = PlayerSignifiers.ObservantPlayer;
 }

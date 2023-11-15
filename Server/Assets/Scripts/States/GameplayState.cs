@@ -4,20 +4,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
+using static UnityEditor.Experimental.GraphView.GraphView;
+using static UnityEditor.PlayerSettings;
 
 public class GameplayState : BaseState
 {
     public override void OnRecievedMessage(StateManager manager,
         int signifier, int ID, string[] msg)
     {
+        Player CurrentPlayer = manager.ReturnPlayer(ID);
+        Gameroom CurrentRoom = manager.ReturnGameroom(ID);
+        List<Player> CurrentRoomPlayerList = manager.ReturnGameroom(ID).PlayersList;
+
         switch (signifier)
         {
             case ClientMessageType.OnContinue:
-                foreach (Player n_player in manager.ReturnGameroom(ID).PlayersList)
+                foreach (Player n_player in CurrentRoomPlayerList)
                 {
                     if (n_player.ConnectionID != ID)
                     {
-                        message = manager.ReturnPlayer(ID).Username + " Sent this: \"" + msg[0] + "\"";
+                        message = CurrentPlayer.Username + " Sent this: \"" + msg[0] + "\"";
                         type = ServerToClientSignifiers.ContineSuccess;
                         manager.SendMessageToClient(Response(), n_player.ConnectionID);
                     }
@@ -25,12 +31,12 @@ public class GameplayState : BaseState
                 break;
 
             case ClientMessageType.OnReturn:
-                for (int i = 0; i < manager.ReturnGameroom(ID).PlayersList.Count; i++)
+                for (int i = 0; i < CurrentRoomPlayerList.Count; i++)
                 {
-                    if (manager.ReturnGameroom(ID).PlayersList[i].ConnectionID == ID)
+                    if (CurrentRoomPlayerList[i].ConnectionID == ID)
                     {
                         message = "Removed from Gameplay";
-                        manager.ReturnGameroom(ID).PlayersList.RemoveAt(i);
+                        CurrentRoomPlayerList.RemoveAt(i);
                         type = ServerToClientSignifiers.ReturnSuccess;
                         manager.SendMessageToClient(Response(), ID);
                         break;
@@ -40,44 +46,64 @@ public class GameplayState : BaseState
                 break;
 
             case ClientMessageType.OnSpecial:
-                message = "position is Ocupied by " + manager.ReturnGameroom(ID).grid[int.Parse(msg[0])];
-
-                if (manager.ReturnGameroom(ID).grid[int.Parse(msg[0])] != 'X' &&
-                    manager.ReturnGameroom(ID).grid[int.Parse(msg[0])] != 'O')
+                char ValueOnGridPosition = manager.GetValueOnPosition(ID, msg[0]);
+                if (ValueOnGridPosition != 'X' && ValueOnGridPosition != 'O')
                 {
-                    if (manager.ReturnGameroom(ID).PlayersList[0].ConnectionID==ID)
+                    if (manager.ReturnPlayerInGameRoom(ID).type == PlayerSignifiers.XPlayer)
                     {
-                        manager.ReturnGameroom(ID).grid[int.Parse(msg[0])] = 'O';
+                        CurrentRoom.grid[int.Parse(msg[0])] = 'X';
+                        message = "X succsesfully played on: " + msg[0];
+
                     }
-                    else
+                    else if (manager.ReturnPlayerInGameRoom(ID).type == PlayerSignifiers.OPlayer)
                     {
-                        manager.ReturnGameroom(ID).grid[int.Parse(msg[0])] = 'X';
+                        CurrentRoom.grid[int.Parse(msg[0])] = 'O';
+                        message = "O succsesfully played on: " + msg[0];
+
+
                     }
+                    type = ServerToClientSignifiers.SpecialSuccess;
+                    manager.SendMessageToClient(Response(), ID);
 
                     //If end not reached
-                    if (CheckWin(manager.ReturnGameroom(ID).grid) != 0)
+                    if (CheckWin(CurrentRoom.grid) != 0)
                     {
                         message = "End Reached";
                         type = ServerToClientSignifiers.GAMEEND;
-
+                        foreach (Player n_player in CurrentRoomPlayerList)
+                        {
+                            manager.SendMessageToClient(type.ToString() + "," + message, n_player.ConnectionID);
+                        }
                     }
                     else
                     {
                         //send message to other Players
-                        foreach (Player n_player in manager.ReturnGameroom(ID).PlayersList)
+
+                        message = "Oponent Played on: " + msg[0];
+                        type = ServerToClientSignifiers.EnemyMoved;
+                        manager.SendMessageToClient(Response(), manager.ReturnOponent(ID).ConnectionID);
+
+                        type = ServerToClientSignifiers.Failure;
+                        message = CurrentRoom.grid.ToString();
+                        foreach (Player n_player in CurrentRoomPlayerList)
                         {
-                            if (n_player.ConnectionID != ID)
+                            if (n_player.type == PlayerSignifiers.ObservantPlayer)
                             {
-                                message = "Oponent Played on: " + msg[0];
-                                manager.SendMessageToClient(Response(), n_player.ConnectionID);
+                                manager.SendMessageToClient(type.ToString() + "," + message, n_player.ConnectionID);
                             }
                         }
-                        message = "Successfull play on: " + msg[0];
-                        type = ServerToClientSignifiers.SpecialSuccess;
-
                     }
+
+
                 }
-                manager.SendMessageToClient(Response(), ID);
+                else
+                {
+                    message = "position is Ocupied by " + ValueOnGridPosition;
+                    type = ServerToClientSignifiers.Failure;
+                    manager.SendMessageToClient(Response(), ID);
+                }
+
+
 
                 break;
 

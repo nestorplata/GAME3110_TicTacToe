@@ -108,6 +108,42 @@ public class StateManager : MonoBehaviour
 
     }
 
+    public Player ReturnPlayerInGameRoom(int ID)
+    {
+        foreach (Gameroom room in GameroomList)
+        {
+            foreach (Player player in room.PlayersList)
+            {
+                if (player.ConnectionID == ID)
+                {
+                    return player;
+                }
+            }
+        }
+        return null;
+    }
+
+    public Player ReturnOponent(int ID)
+    {
+        foreach (Gameroom room in GameroomList)
+        {
+            foreach (Player player in room.PlayersList)
+            {
+                if (player.ConnectionID != ID&&
+                    player.type != PlayerSignifiers.ObservantPlayer)
+                {
+                    return player;
+                }
+            }
+        }
+        return null;
+    }
+
+    public char GetValueOnPosition(int ID, string pos)
+    {
+       return ReturnGameroom(ID).grid[int.Parse(pos)];
+    }
+
 }
 
 #region Protocol Signifiers
@@ -138,6 +174,13 @@ static public class ServerToClientSignifiers
     public const int EnemyMoved = 4;
     public const int GAMEEND= 5;
 
+}
+
+static public class PlayerSignifiers
+{
+    public const int ObservantPlayer = 0;
+    public const int XPlayer = 1;
+    public const int OPlayer = 2;
 }
 
 #endregion

@@ -10,6 +10,8 @@ public class loginState : BaseState
     public override void OnRecievedMessage(StateManager manager,
         int signifier, int ID, string[] msg)
     {
+        Player CurrentPlayer = manager.ReturnPlayer(msg[0]);
+
         message = "wrong Username";
 
         if (File.Exists("Accounts\\" + msg[0] + ".txt"))
@@ -18,9 +20,9 @@ public class loginState : BaseState
             {
                 if (msg[1] == sr.ReadLine())
                 {
-                    if (manager.ReturnPlayer(msg[0])==null)
+                    if (CurrentPlayer == null)
                     {
-                        manager.ReturnPlayer(ID).Username = msg[0];
+                        CurrentPlayer.Username = msg[0];
                         type = ServerToClientSignifiers.ContineSuccess;
                         message = "logged in";
                     }

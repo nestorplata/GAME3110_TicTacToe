@@ -9,6 +9,8 @@ public class createState : BaseState
     public override void OnRecievedMessage(StateManager manager,
     int signifier, int ID, string[] msg)
     {
+        Player CurrentPlayer = manager.ReturnPlayer(msg[0]);
+
         message = "Account Already Exists";
 
         if (!File.Exists("Accounts\\" + msg[0] + ".txt"))
@@ -17,7 +19,7 @@ public class createState : BaseState
             {
                 sw.WriteLine(msg[1]);
             }
-            manager.ReturnPlayer(ID).Username = msg[0];
+            CurrentPlayer.Username = msg[0];
             message = "Account Created";
             type = ServerToClientSignifiers.ContineSuccess;
 

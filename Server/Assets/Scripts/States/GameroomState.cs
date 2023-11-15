@@ -5,17 +5,20 @@ using Unity.Networking.Transport;
 using UnityEngine;
 using UnityEngine.Networking.PlayerConnection;
 using UnityEngine.Scripting.APIUpdating;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class GameroomState : BaseState
 {
     public override void OnRecievedMessage(StateManager manager,
             int signifier, int ID, string[] msg)
     {
+        List<Player> CurrentRoomPlayerList = manager.ReturnGameroom(msg[0]).PlayersList;
+
         switch (signifier)
         {
             case ClientMessageType.OnContinue:
 
-                switch (manager.ReturnGameroom(msg[0]).PlayersList.Count)
+                switch (CurrentRoomPlayerList.Count)
                 {
                     case 1:
                         message = "Waiting for new player";
@@ -24,9 +27,12 @@ public class GameroomState : BaseState
                     case 2:
                         message = "Moved To GamePlay As Player";
                         type = ServerToClientSignifiers.ContineSuccess;
-                        foreach (Player player in manager.ReturnGameroom(msg[0]).PlayersList)
+                        CurrentRoomPlayerList[0].type = PlayerSignifiers.XPlayer;
+                        CurrentRoomPlayerList[1].type = PlayerSignifiers.OPlayer;
+
+                        foreach (Player player in CurrentRoomPlayerList)
                         {
-                            manager.SendMessageToClient(Response(), player.ConnectionID);
+                            manager.SendMessageToClient(type.ToString() + "," + message, player.ConnectionID);
                         }
                         break;
                     default:
@@ -40,11 +46,11 @@ public class GameroomState : BaseState
 
             case ClientMessageType.OnReturn:
                 message = "Unable To Remove from Gameroom";
-                for (int i = 0; i < manager.ReturnGameroom(ID).PlayersList.Count; i++)
+                for (int i = 0; i < CurrentRoomPlayerList.Count; i++)
                 {
-                    if (manager.ReturnGameroom(ID).PlayersList[i].ConnectionID ==ID)
+                    if (CurrentRoomPlayerList[i].ConnectionID ==ID)
                     {
-                        manager.ReturnGameroom(ID).PlayersList.RemoveAt(i);
+                        CurrentRoomPlayerList.RemoveAt(i);
                         type = ServerToClientSignifiers.ReturnSuccess;
                         message = "Removed from Gameooom";
                         break;
