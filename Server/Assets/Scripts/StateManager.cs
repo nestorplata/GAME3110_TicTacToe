@@ -123,9 +123,9 @@ static public class ClientToServerSignifiers
 
 static public class ClientMessageType
 {
-    public const int OnContinue = 1;
-    public const int OnReturn = 2;
-    public const int OnSpecial = 3;
+    public const int OnContinue = 0;
+    public const int OnReturn = 1;
+    public const int OnSpecial = 2;
 }
 
 static public class ServerToClientSignifiers

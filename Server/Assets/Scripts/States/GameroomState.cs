@@ -38,11 +38,11 @@ public class GameroomState : BaseState
                 break;
 
             case ClientMessageType.OnReturn:
-                for (int i = 0; i < manager.ReturnGameroom(msg[0]).PlayersList.Count; i++)
+                for (int i = 0; i < manager.ReturnGameroom(ID).PlayersList.Count; i++)
                 {
-                    if (manager.ReturnGameroom(msg[0]).PlayersList[i].ConnectionID ==ID)
+                    if (manager.ReturnGameroom(ID).PlayersList[i].ConnectionID ==ID)
                     {
-                        manager.ReturnGameroom(msg[0]).PlayersList.RemoveAt(i);
+                        manager.ReturnGameroom(ID).PlayersList.RemoveAt(i);
                         Response(ServerToClientSignifiers.ReturnSuccess);
                         break;
                     }
