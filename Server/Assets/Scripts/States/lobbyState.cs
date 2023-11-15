@@ -15,8 +15,7 @@ public class lobbyState : BaseState
                 if (manager.ReturnGameroom(msg[0])!=null)
                 {
                     manager.ReturnGameroom(msg[0]).PlayersList.Add(manager.ReturnPlayer(ID));
-                    Response(ServerToClientSignifiers.SuccessA);
-
+                    message = "Gameroom Joined";
                 }
                 else
                 {
@@ -24,19 +23,20 @@ public class lobbyState : BaseState
                     room.PlayersList.Add(manager.ReturnPlayer(ID));
                     room.GameroomID = msg[0];
                     manager.GameroomList.Add(room);
-                    Response(ServerToClientSignifiers.BasicSuccess);
+                    message = "Gameroom Created";
 
                 }
+                type = ServerToClientSignifiers.ContineSuccess;
                 break;
 
             case ClientMessageType.OnReturn:
                 manager.ReturnPlayer(ID).Username = "";
-                Response(ServerToClientSignifiers.ReturnSuccess);
+                message = "Logged Off";
+                type = ServerToClientSignifiers.ReturnSuccess;
                 break;
 
         }
 
-        manager.SendMessageToClient(message, ID);
-
+        manager.SendMessageToClient(Response(), ID);
     }
 }

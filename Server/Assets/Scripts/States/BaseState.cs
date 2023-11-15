@@ -6,18 +6,18 @@ using UnityEngine;
 public abstract class BaseState
 {
     public string message = "none";
+    public int type = ServerToClientSignifiers.Failure;
 
     public abstract void OnRecievedMessage(StateManager manager, 
         int signifier, int ID, string[] msg);
 
-    public void Response(int type, string additional = "")
+    public string Response()
     {
-        if(additional!="")
-        {
-            additional = ',' + additional;
-        }
-        message = type.ToString()+ additional;
 
+        message = type.ToString()+ "," +message;
+        //Remove to quikly acces GamePlay
+        type = ServerToClientSignifiers.Failure;
+        return message;
     }
 
 

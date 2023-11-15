@@ -130,11 +130,14 @@ static public class ClientMessageType
 
 static public class ServerToClientSignifiers
 {
-    public const int BasicSuccess = 0;
-    public const int SuccessA = 1;
+    public const int Failure = -1;
+    public const int ContineSuccess = 0;
+    public const int ContinueAsObserver = 1;
     public const int ReturnSuccess = 2;
-    public const int BasicFailure = 4;
-    public const int FailureA = 5;
-    public const int FailureB = 6;
+    public const int SpecialSuccess = 3;
+    public const int EnemyMoved = 4;
+    public const int GAMEEND= 5;
+
 }
+
 #endregion
